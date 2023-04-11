@@ -20,7 +20,13 @@ using namespace zenoh;
 
 int _main(int argc, char **argv) {
     const char *keyexpr = "demo/example/zenoh-cpp-put";
-    const char *value = "Put from CPP!";
+#ifdef ZENOHCXX_ZENOHC
+    const char *value = "Put from C++/zenohc!";
+#elif ZENOHCXX_ZENOHPICO
+    const char *value = "Put from C++/zenohpico!";
+#else
+#error "Unknown zenoh backend"
+#endifs
 
     if (argc > 1) keyexpr = argv[1];
     if (argc > 2) value = argv[2];
