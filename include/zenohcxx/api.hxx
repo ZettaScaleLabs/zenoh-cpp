@@ -670,6 +670,107 @@ struct Timestamp : Copyable<::z_timestamp_t> {
 };
 
 #ifdef __ZENOHCXX_ZENOHC
+/// TODO(sashacmc): The attachment vtable.
+///
+struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
+    using Copyable::Copyable;
+
+    /// @name Constructors
+
+    /// @brief AttachmentVTable with a prefix and a suffix
+    AttachmentVTable(z_attachment_iter_driver_t _iter_driver, z_attachment_len_t _len_func)
+        : Copyable(::z_attachment_vtable(_iter_driver, _len_func)) {}
+
+    /// @name Methods
+
+    /// @brief Set the prefix for the encoding
+    /// @param _iter_driver value of ``z_attachment_iter_driver_t`` type
+    /// @return Reference to the ``AttachmentVTable`` object
+    AttachmentVTable& set_iteration_driver(z_attachment_iter_driver_t _iter_driver) {
+        iteration_driver = _iter_driver;
+        return *this;
+    }
+
+    /// @brief Set the suffix for the encoding
+    /// @param _len_func value of ``z_attachment_len_t`` type
+    /// @return Reference to the ``AttachmentVTable`` object
+    AttachmentVTable& set_len_func(z_attachment_len_t _len_func) {
+        len = _len_func;
+        return *this;
+    }
+
+    /// @brief Get the iteration driver
+    /// @return value of ``z_attachment_iter_driver_t`` type
+    z_attachment_iter_driver_t get_iteration_driver() const { return iteration_driver; }
+
+    /// @brief Get the len function
+    /// @return value of ``z_attachment_len_t`` type
+    z_attachment_len_t get_len_func() const { return len; }
+
+    /// @name Operators
+
+    /// @brief Equality operator
+    /// @param v other ``AttachmentVTable`` object
+    /// @return true if the encodings are equal
+    bool operator==(const AttachmentVTable& v) const {
+        return get_iteration_driver() == v.get_iteration_driver() && get_len_func() == v.get_len_func();
+    }
+
+    /// @brief Inequality operator
+    /// @param v other ``AttachmentVTable`` object
+    /// @return true if the encodings are not equal
+    bool operator!=(const AttachmentVTable& v) const { return !operator==(v); }
+};
+
+/// TODO(sashacmc): The attachment.
+///
+struct Attachment : public Copyable<::z_attachment_t> {
+    using Copyable::Copyable;
+
+    /// @name Constructors
+
+    /// @brief Attachment construnctor
+    Attachment(void* _data, AttachmentVTable _vtable) : Copyable(::z_attachment(_data, _vtable)) {}
+
+    /// @name Methods
+
+    /// @brief Set the data pointer for attachment
+    /// @param _data value of ``void*`` type
+    /// @return Reference to the ``Attachment`` object
+    Attachment& set_data(void* _data) {
+        data = _data;
+        return *this;
+    }
+
+    /// @brief Set the vtable for the attachment
+    /// @param _vtable value of ``zenoh::AttachmentVTable`` type
+    /// @return Reference to the ``Attachment`` object
+    Attachment& set_vtable(const AttachmentVTable& _vtable) {
+        vtable = &_vtable;
+        return *this;
+    }
+
+    /// @brief Get the data pointer of the attachment
+    /// @return value of ``void *`` type
+    void* get_data() const { return data; }
+
+    /// @brief Get the vtable of the attachment
+    /// @return value of ``zenoh::AttachmentVTable`` type
+    const AttachmentVTable* get_vtable() const { return static_cast<const AttachmentVTable*>(vtable); }
+
+    /// @name Operators
+
+    /// @brief Equality operator
+    /// @param v other ``Attachment`` object
+    /// @return true if the encodings are equal
+    bool operator==(const Attachment& v) const { return get_data() == v.get_data() && get_vtable() == v.get_vtable(); }
+
+    /// @brief Inequality operator
+    /// @param v other ``Attachment`` object
+    /// @return true if the encodings are not equal
+    bool operator!=(const Attachment& v) const { return !operator==(v); }
+};
+
 /// Reference to data buffer in shared memory with reference counting. When all instances of ``Payload`` are destroyed,
 /// the buffer is freed.
 /// It can be convenient if it's necessary to resend the buffer to one or multiple receivers without copying it.
@@ -1392,7 +1493,19 @@ struct PublisherPutOptions : public Copyable<::z_publisher_put_options_t> {
         encoding = e;
         return *this;
     };
+#ifdef __ZENOHCXX_ZENOHC
+    /// @brief Get the encoding of the publisher
+    /// @return ``zenoh::Encoding`` value
+    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
 
+    /// @brief Set the encoding of the publisher
+    /// @param e the ``zenoh::Encoding`` value
+    /// @return reference to the structure itself
+    PublisherPutOptions& set_attachment(z::Attachment a) {
+        attachment = a;
+        return *this;
+    };
+#endif  // ifdef __ZENOHCXX_ZENOHC
     /// @name Operators
 
     /// @brief Equality operator
