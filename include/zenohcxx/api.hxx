@@ -730,14 +730,14 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @name Constructors
 
     /// @brief Attachment construnctor
-    Attachment(void* _data, AttachmentVTable _vtable) : Copyable(::z_attachment(_data, _vtable)) {}
+    Attachment(const void* _data, const AttachmentVTable& _vtable) : Copyable(::z_attachment(_data, &_vtable)) {}
 
     /// @name Methods
 
     /// @brief Set the data pointer for attachment
     /// @param _data value of ``void*`` type
     /// @return Reference to the ``Attachment`` object
-    Attachment& set_data(void* _data) {
+    Attachment& set_data(const void* _data) {
         data = _data;
         return *this;
     }
@@ -752,11 +752,25 @@ struct Attachment : public Copyable<::z_attachment_t> {
 
     /// @brief Get the data pointer of the attachment
     /// @return value of ``void *`` type
-    void* get_data() const { return data; }
+    const void* get_data() const { return data; }
 
     /// @brief Get the vtable of the attachment
     /// @return value of ``zenoh::AttachmentVTable`` type
     const AttachmentVTable* get_vtable() const { return static_cast<const AttachmentVTable*>(vtable); }
+
+    /// @name Methods
+
+    /// Returns the amount of the items in the attachment
+    /// @return the amount of the items in the attachment
+    BytesView get(const BytesView& key) const { return ::z_attachment_get(*this, key); }
+
+    /// Returns the amount of the items in the attachment
+    /// @return the amount of the items in the attachment
+    size_t get_len() const { return ::z_attachment_len(*this); }
+
+    /// Checks if the attachment is initialized
+    /// @return true if the array is initialized
+    bool check() const { return ::z_attachment_check(this); }
 
     /// @name Operators
 
@@ -770,6 +784,27 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @return true if the encodings are not equal
     bool operator!=(const Attachment& v) const { return !operator==(v); }
 };
+
+template <typename T>
+inline Attachment as_attachment(const T& pair_container) {
+    static AttachmentVTable vtable(
+        [](const void* data, z_attachment_iter_body_t body, void* ctx) -> int8_t {
+            const T* pair_container = reinterpret_cast<const T*>(data);
+            for (const auto& it : *pair_container) {
+                int8_t ret = body(BytesView(it.first), BytesView(it.second), ctx);
+                if (ret) {
+                    return ret;
+                }
+            }
+            return 0;
+        },
+        [](const void* data) -> size_t {
+            const T* pair_container = reinterpret_cast<const T*>(data);
+            return pair_container->size();
+        });
+
+    return Attachment(reinterpret_cast<const void*>(&pair_container), vtable);
+}
 
 /// Reference to data buffer in shared memory with reference counting. When all instances of ``Payload`` are destroyed,
 /// the buffer is freed.
@@ -1149,6 +1184,20 @@ struct PutOptions : public Copyable<::z_put_options_t> {
         return *this;
     }
 
+#ifdef __ZENOHCXX_ZENOHC
+    /// @brief Get the attachment
+    /// @return ``zenoh::Attachment`` value
+    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
+
+    /// @brief Set the attachment
+    /// @param a the ``zenoh::Attachment`` value
+    /// @return reference to the structure itself
+    PutOptions& set_attachment(z::Attachment a) {
+        attachment = a;
+        return *this;
+    };
+#endif  // ifdef __ZENOHCXX_ZENOHC
+
     /// @name Operators
 
     /// @brief Equality operator
@@ -1493,19 +1542,21 @@ struct PublisherPutOptions : public Copyable<::z_publisher_put_options_t> {
         encoding = e;
         return *this;
     };
+
 #ifdef __ZENOHCXX_ZENOHC
-    /// @brief Get the encoding of the publisher
-    /// @return ``zenoh::Encoding`` value
+    /// @brief Get the attachment
+    /// @return ``zenoh::Attachment`` value
     const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
 
-    /// @brief Set the encoding of the publisher
-    /// @param e the ``zenoh::Encoding`` value
+    /// @brief Set the attachment
+    /// @param a the ``zenoh::Attachment`` value
     /// @return reference to the structure itself
     PublisherPutOptions& set_attachment(z::Attachment a) {
         attachment = a;
         return *this;
     };
 #endif  // ifdef __ZENOHCXX_ZENOHC
+
     /// @name Operators
 
     /// @brief Equality operator

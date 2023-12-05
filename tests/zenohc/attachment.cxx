@@ -1,0 +1,104 @@
+//
+// Copyright (c) 2023 ZettaScale Technology
+//
+// This program and the accompanying materials are made available under the
+// terms of the Eclipse Public License 2.0 which is available at
+// http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+// which is available at https://www.apache.org/licenses/LICENSE-2.0.
+//
+// SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+//
+// Contributors:
+//   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
+//
+
+#include <map>
+#include <string>
+
+#include "zenohc.hxx"
+
+using namespace zenohc;
+
+#undef NDEBUG
+#include <assert.h>
+
+void writting_through_map_read_by_get() {
+    // Writing
+    std::map<std::string, std::string> amap;
+    amap.insert(std::make_pair("k1", "v1"));
+    amap.insert(std::make_pair("k2", "v2"));
+    auto attachment = as_attachment(amap);
+
+    // Size check
+    assert(attachment.get_len() == 2);
+
+    // Elements check
+    std::string a1(attachment.get(BytesView("k1")).as_string_view());
+    assert(a1 == "v1");
+
+    std::string a2(attachment.get(BytesView("k2")).as_string_view());
+    assert(a2 == "v2");
+
+    std::string a_non(attachment.get(BytesView("k_non")).as_string_view());
+    assert(a_non == "");
+}
+/* TODO(sashacmc)
+int8_t _attachment_reader(BytesView key, BytesView value, void* ctx) {
+    assert((size_t)ctx == 42);
+    if (key.as_string_view() == "k1") {
+        assert(value.as_string_view() == "v1");
+    }
+    return 24;
+}
+
+void writting_through_map_read_by_iter() {
+    // Writing
+    std::map<std::string, std::string> amap;
+    amap.insert(std::make_pair("k1", "v1"));
+    amap.insert(std::make_pair("k2", "v2"));
+    auto attachment = as_attachment(amap);
+
+    // Size check
+    assert(attachment.get_len() == 2);
+
+    // Elements check
+    int res = z_attachment_iterate(attachment, _attachment_reader, (void*)42);
+    assert(res == 24);
+}
+*/
+void writting_no_map_read_by_get() {
+    AttachmentVTable vtable(
+        [](const void* data, z_attachment_iter_body_t body, void* ctx) -> int8_t {
+            int8_t ret = 0;
+            ret = body(BytesView("k1"), BytesView("v1"), ctx);
+            if (ret) {
+                return ret;
+            }
+            ret = body(BytesView("k2"), BytesView("v2"), ctx);
+            return ret;
+        },
+        [](const void* data) -> size_t { return 2; });
+
+    Attachment attachment(nullptr, vtable);
+
+    // Size check
+    assert(attachment.get_len() == 2);
+
+    // Elements check
+    std::string a1(attachment.get(BytesView("k1")).as_string_view());
+    assert(a1 == "v1");
+
+    assert(attachment.get_len() == 2);
+    std::string a2(attachment.get(BytesView("k2")).as_string_view());
+    assert(a2 == "v2");
+
+    std::string a_non(attachment.get(BytesView("k_non")).as_string_view());
+    assert(a_non == "");
+}
+
+int main(int argc, char** argv) {
+    init_logger();
+    writting_through_map_read_by_get();
+    //     writting_through_map_by_copy_read_by_iter();
+    writting_no_map_read_by_get();
+}
