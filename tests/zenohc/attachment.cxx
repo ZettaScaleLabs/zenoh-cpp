@@ -33,14 +33,11 @@ void writting_through_map_read_by_get() {
     assert(attachment.get_len() == 2);
 
     // Elements check
-    std::string a1(attachment.get(BytesView("k1")).as_string_view());
-    assert(a1 == "v1");
-
-    std::string a2(attachment.get(BytesView("k2")).as_string_view());
-    assert(a2 == "v2");
-
-    std::string a_non(attachment.get(BytesView("k_non")).as_string_view());
-    assert(a_non == "");
+    assert(attachment.get("k1").as_string_view() == "v1");
+    assert(attachment.get("k2").as_string_view() == "v2");
+    // TODO(sashacmc): default value or error for unexisted key?
+    // do we need also some macro to convert to the map?
+    assert(attachment.get("k_non").as_string_view() == "");
 }
 
 int8_t _attachment_reader(const BytesView& key, const BytesView& value, void* ctx) {
@@ -89,15 +86,9 @@ void writting_no_map_read_by_get() {
     assert(attachment.get_len() == 2);
 
     // Elements check
-    std::string a1(attachment.get(BytesView("k1")).as_string_view());
-    assert(a1 == "v1");
-
-    assert(attachment.get_len() == 2);
-    std::string a2(attachment.get(BytesView("k2")).as_string_view());
-    assert(a2 == "v2");
-
-    std::string a_non(attachment.get(BytesView("k_non")).as_string_view());
-    assert(a_non == "");
+    assert(attachment.get("k1").as_string_view() == "v1");
+    assert(attachment.get("k2").as_string_view() == "v2");
+    assert(attachment.get("k_non").as_string_view() == "");
 }
 
 int main(int argc, char** argv) {
