@@ -676,13 +676,13 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
 
     /// @name Constructors
 
-    /// @brief AttachmentVTable with a prefix and a suffix
+    /// @brief AttachmentVTable with a iteration driver and a len functions
     AttachmentVTable(z_attachment_iter_driver_t _iter_driver, z_attachment_len_t _len_func)
         : Copyable(::z_attachment_vtable(_iter_driver, _len_func)) {}
 
     /// @name Methods
 
-    /// @brief Set the prefix for the encoding
+    /// @brief Set the iteration driver
     /// @param _iter_driver value of ``z_attachment_iter_driver_t`` type
     /// @return Reference to the ``AttachmentVTable`` object
     AttachmentVTable& set_iteration_driver(z_attachment_iter_driver_t _iter_driver) {
@@ -690,7 +690,7 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
         return *this;
     }
 
-    /// @brief Set the suffix for the encoding
+    /// @brief Set the len function
     /// @param _len_func value of ``z_attachment_len_t`` type
     /// @return Reference to the ``AttachmentVTable`` object
     AttachmentVTable& set_len_func(z_attachment_len_t _len_func) {
@@ -710,14 +710,15 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
 
     /// @brief Equality operator
     /// @param v other ``AttachmentVTable`` object
-    /// @return true if the encodings are equal
+    /// @return true if the attachment v-tables are equal
     bool operator==(const AttachmentVTable& v) const {
+        // TODO(sashacmc): should we implement a deep comparing?
         return get_iteration_driver() == v.get_iteration_driver() && get_len_func() == v.get_len_func();
     }
 
     /// @brief Inequality operator
     /// @param v other ``AttachmentVTable`` object
-    /// @return true if the encodings are not equal
+    /// @return true if the attachment v-tables are not equal
     bool operator!=(const AttachmentVTable& v) const { return !operator==(v); }
 };
 
@@ -741,7 +742,7 @@ struct Attachment : public Copyable<::z_attachment_t> {
         return *this;
     }
 
-    /// @brief Set the vtable for the attachment
+    /// @brief Set the v-table for the attachment
     /// @param _vtable value of ``zenoh::AttachmentVTable`` type
     /// @return Reference to the ``Attachment`` object
     Attachment& set_vtable(const AttachmentVTable& _vtable) {
@@ -753,14 +754,14 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @return value of ``void *`` type
     const void* get_data() const { return data; }
 
-    /// @brief Get the vtable of the attachment
+    /// @brief Get the v-table of the attachment
     /// @return value of ``zenoh::AttachmentVTable`` type
     const AttachmentVTable* get_vtable() const { return static_cast<const AttachmentVTable*>(vtable); }
 
     /// @name Methods
 
-    /// Returns the amount of the items in the attachment
-    /// @return the amount of the items in the attachment
+    /// Returns the item value from the attachment by key
+    /// @return the item value value
     BytesView get(const BytesView& key) const { return ::z_attachment_get(*this, key); }
 
     /// Returns the amount of the items in the attachment
@@ -768,12 +769,12 @@ struct Attachment : public Copyable<::z_attachment_t> {
     size_t get_len() const { return ::z_attachment_len(*this); }
 
     /// Checks if the attachment is initialized
-    /// @return true if the array is initialized
+    /// @return true if the attachment is initialized
     bool check() const { return ::z_attachment_check(this); }
 
     typedef int8_t (*IterBody)(const BytesView& key, const BytesView& value, void* context);
 
-    // Iterate over `this`'s key-value pairs, breaking if `body` returns a non-zero
+    // Iterate over attachment's key-value pairs, breaking if `body` returns a non-zero
     // value for a key-value pair, and returning the latest return value.
     // `context` is passed to `body` to allow stateful closures.
     // This function takes no ownership whatsoever.
@@ -784,15 +785,17 @@ struct Attachment : public Copyable<::z_attachment_t> {
 
     /// @brief Equality operator
     /// @param v other ``Attachment`` object
-    /// @return true if the encodings are equal
+    /// @return true if the attachment objects encodings are equal
     bool operator==(const Attachment& v) const { return get_data() == v.get_data() && get_vtable() == v.get_vtable(); }
 
     /// @brief Inequality operator
     /// @param v other ``Attachment`` object
-    /// @return true if the encodings are not equal
+    /// @return true if the attachment objects are not equal
     bool operator!=(const Attachment& v) const { return !operator==(v); }
 };
 
+/// Wraps the container which allows iterate by std::pair<std::string_view, std::string_view>
+// (e.g. std::map<std::string_view, std::string_view>) as an attachment.
 template <typename T>
 inline Attachment as_attachment(const T& pair_container) {
     static AttachmentVTable vtable(
