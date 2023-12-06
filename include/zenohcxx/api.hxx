@@ -670,8 +670,7 @@ struct Timestamp : Copyable<::z_timestamp_t> {
 };
 
 #ifdef __ZENOHCXX_ZENOHC
-/// TODO(sashacmc): The attachment vtable.
-///
+/// The attachment vtable.
 struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
     using Copyable::Copyable;
 
@@ -722,8 +721,8 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
     bool operator!=(const AttachmentVTable& v) const { return !operator==(v); }
 };
 
-/// TODO(sashacmc): The attachment.
-///
+/// The attachment.
+/// A v-table based map of byte slice to byte slice.
 struct Attachment : public Copyable<::z_attachment_t> {
     using Copyable::Copyable;
 
@@ -772,6 +771,15 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @return true if the array is initialized
     bool check() const { return ::z_attachment_check(this); }
 
+    typedef int8_t (*IterBody)(const BytesView& key, const BytesView& value, void* context);
+
+    // Iterate over `this`'s key-value pairs, breaking if `body` returns a non-zero
+    // value for a key-value pair, and returning the latest return value.
+    // `context` is passed to `body` to allow stateful closures.
+    // This function takes no ownership whatsoever.
+    /// @return the latest return value
+    int8_t iterate(IterBody body, void* context) const;
+
     /// @name Operators
 
     /// @brief Equality operator
@@ -789,7 +797,7 @@ template <typename T>
 inline Attachment as_attachment(const T& pair_container) {
     static AttachmentVTable vtable(
         [](const void* data, z_attachment_iter_body_t body, void* ctx) -> int8_t {
-            const T* pair_container = reinterpret_cast<const T*>(data);
+            const T* pair_container = static_cast<const T*>(data);
             for (const auto& it : *pair_container) {
                 int8_t ret = body(BytesView(it.first), BytesView(it.second), ctx);
                 if (ret) {
@@ -799,11 +807,11 @@ inline Attachment as_attachment(const T& pair_container) {
             return 0;
         },
         [](const void* data) -> size_t {
-            const T* pair_container = reinterpret_cast<const T*>(data);
+            const T* pair_container = static_cast<const T*>(data);
             return pair_container->size();
         });
 
-    return Attachment(reinterpret_cast<const void*>(&pair_container), vtable);
+    return Attachment(static_cast<const void*>(&pair_container), vtable);
 }
 
 /// Reference to data buffer in shared memory with reference counting. When all instances of ``Payload`` are destroyed,

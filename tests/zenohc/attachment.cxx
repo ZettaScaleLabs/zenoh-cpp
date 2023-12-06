@@ -42,13 +42,17 @@ void writting_through_map_read_by_get() {
     std::string a_non(attachment.get(BytesView("k_non")).as_string_view());
     assert(a_non == "");
 }
-/* TODO(sashacmc)
-int8_t _attachment_reader(BytesView key, BytesView value, void* ctx) {
+
+int8_t _attachment_reader(const BytesView& key, const BytesView& value, void* ctx) {
     assert((size_t)ctx == 42);
     if (key.as_string_view() == "k1") {
         assert(value.as_string_view() == "v1");
+        return 0;
+    } else if (key.as_string_view() == "k2") {
+        assert(value.as_string_view() == "v2");
+        return 0;
     }
-    return 24;
+    assert(!"Unexpected");
 }
 
 void writting_through_map_read_by_iter() {
@@ -62,10 +66,9 @@ void writting_through_map_read_by_iter() {
     assert(attachment.get_len() == 2);
 
     // Elements check
-    int res = z_attachment_iterate(attachment, _attachment_reader, (void*)42);
-    assert(res == 24);
+    int res = attachment.iterate(_attachment_reader, (void*)42);
 }
-*/
+
 void writting_no_map_read_by_get() {
     AttachmentVTable vtable(
         [](const void* data, z_attachment_iter_body_t body, void* ctx) -> int8_t {
@@ -99,6 +102,6 @@ void writting_no_map_read_by_get() {
 int main(int argc, char** argv) {
     init_logger();
     writting_through_map_read_by_get();
-    //     writting_through_map_by_copy_read_by_iter();
+    writting_through_map_read_by_iter();
     writting_no_map_read_by_get();
 }

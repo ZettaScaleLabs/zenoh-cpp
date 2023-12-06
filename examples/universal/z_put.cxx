@@ -71,22 +71,9 @@ int _main(int argc, char **argv) {
     PutOptions options;
     options.set_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN);
 #ifdef ZENOHCXX_ZENOHC
-    //    AttachmentVTable vtable(
-    //        [](void *data, z_attachment_iter_body_t body, void *ctx) -> int8_t {
-    //            int8_t ret = 0;
-    //            ret = body(BytesView("k1"), BytesView("v1"), ctx);
-    //            if (ret) {
-    //                return ret;
-    //            }
-    //            ret = body(BytesView("k2"), BytesView("v2"), ctx);
-    //            return ret;
-    //        },
-    //        [](const void *data) -> size_t { return 2; });
-    //    Attachment attachment(NULL, vtable);
-
     std::map<std::string, std::string> amap;
-    amap.insert(std::make_pair("k1", "v1"));
-    amap.insert(std::make_pair("k2", "v2"));
+    amap.insert(std::make_pair("serial_number", "123"));
+    amap.insert(std::make_pair("coordinates", "48.7082,2.1498"));
     options.set_attachment(as_attachment(amap));
 #endif
     if (!session.put(keyexpr, value, options)) {
