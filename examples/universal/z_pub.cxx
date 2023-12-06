@@ -88,12 +88,19 @@ int _main(int argc, char **argv) {
 
     PublisherPutOptions options;
     options.set_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN);
+#ifdef ZENOHCXX_ZENOHC
+    std::map<std::string, std::string> amap;
+    options.set_attachment(as_attachment(amap));
+#endif
     for (int idx = 0; std::numeric_limits<int>::max(); ++idx) {
         sleep(1);
         std::ostringstream ss;
         ss << "[" << idx << "] " << value;
         auto s = ss.str();  // in C++20 use .view() instead
         std::cout << "Putting Data ('" << keyexpr << "': '" << s << "')...\n";
+#ifdef ZENOHCXX_ZENOHC
+        amap["message number"] = std::to_string(idx);
+#endif
         pub.put(s, options);
     }
     return 0;

@@ -58,9 +58,10 @@ int8_t _attachment_reader(const BytesView& key, const BytesView& value, void* ct
 void writting_through_map_read_by_iter() {
     // Writing
     std::map<std::string, std::string> amap;
+    auto attachment = as_attachment(amap);
+    // amap passed by reference we can change it after
     amap.insert(std::make_pair("k1", "v1"));
     amap.insert(std::make_pair("k2", "v2"));
-    auto attachment = as_attachment(amap);
 
     // Size check
     assert(attachment.get_len() == 2);
