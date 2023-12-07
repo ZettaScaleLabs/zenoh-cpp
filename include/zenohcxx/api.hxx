@@ -956,6 +956,10 @@ struct Sample : public Copyable<::z_sample_t> {
     z::Payload sample_payload_rcinc() const {
         return z::Payload(::zc_sample_payload_rcinc(static_cast<const ::z_sample_t*>(this)));
     }
+
+    /// @brief The attachment of this data sample
+    /// @return ``Attachment`` object
+    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
 #endif
 };
 

@@ -26,9 +26,19 @@ using namespace zenoh;
 
 const char *kind_to_str(z_sample_kind_t kind);
 
+#ifdef __ZENOHCXX_ZENOHC
+int8_t attachment_reader(const BytesView &key, const BytesView &value, void *ctx) {
+    std::cout << "   with attachment: " << key.as_string_view() << ": " << value.as_string_view() << std::endl;
+    return 0;
+}
+#endif
+
 void data_handler(const Sample &sample) {
     std::cout << ">> [Subscriber] Received " << kind_to_str(sample.get_kind()) << " ('"
               << sample.get_keyexpr().as_string_view() << "' : '" << sample.get_payload().as_string_view() << "')\n";
+#ifdef __ZENOHCXX_ZENOHC
+    sample.get_attachment().iterate(attachment_reader, nullptr);
+#endif
 }
 
 int _main(int argc, char **argv) {
