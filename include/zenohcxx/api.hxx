@@ -755,13 +755,13 @@ struct Attachment : public Copyable<::z_attachment_t> {
     const void* get_data() const { return data; }
 
     /// @brief Get the v-table of the attachment
-    /// @return value of ``zenoh::AttachmentVTable`` type
+    /// @return value of ``zenoh::AttachmentVTable *`` type
     const AttachmentVTable* get_vtable() const { return static_cast<const AttachmentVTable*>(vtable); }
 
     /// @name Methods
 
     /// Returns the item value from the attachment by key
-    /// @return the item value value
+    /// @return the item value
     BytesView get(const BytesView& key) const { return ::z_attachment_get(*this, key); }
 
     /// Returns the amount of the items in the attachment
@@ -1207,7 +1207,7 @@ struct PutOptions : public Copyable<::z_put_options_t> {
     /// @brief Set the attachment
     /// @param a the ``zenoh::Attachment`` value
     /// @return reference to the structure itself
-    PutOptions& set_attachment(z::Attachment a) {
+    PutOptions& set_attachment(const z::Attachment& a) {
         attachment = a;
         return *this;
     };
@@ -1566,7 +1566,7 @@ struct PublisherPutOptions : public Copyable<::z_publisher_put_options_t> {
     /// @brief Set the attachment
     /// @param a the ``zenoh::Attachment`` value
     /// @return reference to the structure itself
-    PublisherPutOptions& set_attachment(z::Attachment a) {
+    PublisherPutOptions& set_attachment(const z::Attachment& a) {
         attachment = a;
         return *this;
     };
