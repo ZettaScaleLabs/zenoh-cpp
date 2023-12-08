@@ -678,7 +678,7 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
 
     /// @brief AttachmentVTable with a iteration driver and a len functions
     AttachmentVTable(z_attachment_iter_driver_t _iter_driver, z_attachment_len_t _len_func)
-        : Copyable(::z_attachment_vtable(_iter_driver, _len_func)) {}
+        : Copyable({_iter_driver, _len_func}) {}
 
     /// @name Methods
 
@@ -730,7 +730,7 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @name Constructors
 
     /// @brief Attachment construnctor
-    Attachment(const void* _data, const AttachmentVTable& _vtable) : Copyable(::z_attachment(_data, &_vtable)) {}
+    Attachment(const void* _data, const AttachmentVTable& _vtable) : Copyable({_data, &_vtable}) {}
 
     /// @name Methods
 
