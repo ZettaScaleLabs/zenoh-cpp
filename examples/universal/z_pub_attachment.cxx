@@ -88,13 +88,25 @@ int _main(int argc, char **argv) {
 
     PublisherPutOptions options;
     options.set_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN);
+#ifdef ZENOHCXX_ZENOHC
+    // allocate attachment map
+    std::map<std::string, std::string> amap;
+    // set it as an attachment
+    options.set_attachment(as_attachment(amap));
+    // add some value
+    amap.insert(std::pair("source", "C++"));
+#endif
     for (int idx = 0; std::numeric_limits<int>::max(); ++idx) {
         sleep(1);
         std::ostringstream ss;
         ss << "[" << idx << "] " << value;
         auto s = ss.str();  // in C++20 use .view() instead
         std::cout << "Putting Data ('" << keyexpr << "': '" << s << "')...\n";
-        pub.put(s);
+#ifdef ZENOHCXX_ZENOHC
+        // add some other attachment value
+        amap["index"] = std::to_string(idx);
+#endif
+        pub.put(s, options);
     }
     return 0;
 }

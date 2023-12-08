@@ -12,42 +12,48 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 #include <stdio.h>
-#include <string.h>
-
-#include <iostream>
-#include <limits>
-#include <sstream>
-
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
-#undef min
-#undef max
 #define sleep(x) Sleep(x * 1000)
 #else
 #include <unistd.h>
 #endif
+#include <iostream>
 
 #include "../getargs.h"
 #include "zenoh.hxx"
 using namespace zenoh;
 
-#ifdef ZENOHCXX_ZENOHC
-const char *default_value = "Pub from C++ zenoh-c!";
-const char *default_keyexpr = "demo/example/zenoh-cpp-zenoh-c-pub";
-#elif ZENOHCXX_ZENOHPICO
-const char *default_value = "Pub from C++ zenoh-pico!";
-const char *default_keyexpr = "demo/example/zenoh-cpp-zenoh-pico-pub";
-#else
-#error "Unknown zenoh backend"
+const char *kind_to_str(z_sample_kind_t kind);
+
+#ifdef __ZENOHCXX_ZENOHC
+int8_t attachment_reader(const BytesView &key, const BytesView &value, void *ctx) {
+    std::cout << "   attachment: " << key.as_string_view() << ": '" << value.as_string_view() << "'\n";
+    return 0;
+}
 #endif
 
+void data_handler(const Sample &sample) {
+    std::cout << ">> [Subscriber] Received " << kind_to_str(sample.get_kind()) << " ('"
+              << sample.get_keyexpr().as_string_view() << "' : '" << sample.get_payload().as_string_view() << "')\n";
+#ifdef __ZENOHCXX_ZENOHC
+    // reads full attachment
+    sample.get_attachment().iterate(attachment_reader, nullptr);
+
+    // reads particular attachment item
+    auto index = sample.get_attachment().get("index");
+    if (index != "") {
+        std::cout << "   message number: " << index.as_string_view() << std::endl;
+    }
+#endif
+}
+
 int _main(int argc, char **argv) {
-    const char *keyexpr = default_keyexpr;
-    const char *value = default_value;
+    const char *expr = "demo/example/**";
     const char *locator = nullptr;
     const char *configfile = nullptr;
 
-    getargs(argc, argv, {}, {{"key expression", &keyexpr}, {"value", &value}, {"locator", &locator}}
+    getargs(argc, argv, {}, {{"key expression", &expr}, {"locator", &locator}}
 #ifdef ZENOHCXX_ZENOHC
             ,
             {{"-c", {"config file", &configfile}}}
@@ -77,26 +83,38 @@ int _main(int argc, char **argv) {
         }
     }
 
+    KeyExprView keyexpr(expr);
+
     std::cout << "Opening session..." << std::endl;
     auto session = expect<Session>(open(std::move(config)));
 
-    std::cout << "Declaring Publisher on '" << keyexpr << "'..." << std::endl;
-    auto pub = expect<Publisher>(session.declare_publisher(keyexpr));
+    std::cout << "Declaring Subscriber on '" << keyexpr.as_string_view() << "'..." << std::endl;
+    auto subscriber = expect<Subscriber>(session.declare_subscriber(keyexpr, data_handler));
 #ifdef ZENOHCXX_ZENOHC
-    std::cout << "Publisher on '" << pub.get_keyexpr().as_string_view() << "' declared" << std::endl;
+    std::cout << "Subscriber on '" << subscriber.get_keyexpr().as_string_view() << "' declared" << std::endl;
 #endif
 
-    PublisherPutOptions options;
-    options.set_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN);
-    for (int idx = 0; std::numeric_limits<int>::max(); ++idx) {
-        sleep(1);
-        std::ostringstream ss;
-        ss << "[" << idx << "] " << value;
-        auto s = ss.str();  // in C++20 use .view() instead
-        std::cout << "Putting Data ('" << keyexpr << "': '" << s << "')...\n";
-        pub.put(s);
+    printf("Enter 'q' to quit...\n");
+    int c = 0;
+    while (c != 'q') {
+        c = getchar();
+        if (c == -1) {
+            sleep(1);
+        }
     }
+
     return 0;
+}
+
+const char *kind_to_str(z_sample_kind_t kind) {
+    switch (kind) {
+        case Z_SAMPLE_KIND_PUT:
+            return "PUT";
+        case Z_SAMPLE_KIND_DELETE:
+            return "DELETE";
+        default:
+            return "UNKNOWN";
+    }
 }
 
 int main(int argc, char **argv) {
