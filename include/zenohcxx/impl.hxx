@@ -721,9 +721,9 @@ inline bool z::Session::keyexpr_intersects(const z::KeyExprView& a, const z::Key
 }
 
 #ifdef __ZENOHCXX_ZENOHC
-inline int8_t Attachment::iterate(Attachment::IterBody body, void* context) const {
+inline int8_t AttachmentView::iterate(AttachmentView::IterBody body, void* context) const {
     struct IterContext {
-        Attachment::IterBody body;
+        AttachmentView::IterBody body;
         void* parent_context;
     };
 

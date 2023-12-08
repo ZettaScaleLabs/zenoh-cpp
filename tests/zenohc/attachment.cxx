@@ -80,7 +80,7 @@ void writting_no_map_read_by_get() {
         },
         [](const void* data) -> size_t { return 2; });
 
-    Attachment attachment(nullptr, vtable);
+    AttachmentView attachment(nullptr, vtable);
 
     // Size check
     assert(attachment.get_len() == 2);

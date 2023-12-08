@@ -724,28 +724,28 @@ struct AttachmentVTable : public Copyable<::z_attachment_vtable_t> {
 
 /// The attachment.
 /// A v-table based map of byte slice to byte slice.
-struct Attachment : public Copyable<::z_attachment_t> {
+struct AttachmentView : public Copyable<::z_attachment_t> {
     using Copyable::Copyable;
 
     /// @name Constructors
 
-    /// @brief Attachment construnctor
-    Attachment(const void* _data, const AttachmentVTable& _vtable) : Copyable({_data, &_vtable}) {}
+    /// @brief AttachmentView construnctor
+    AttachmentView(const void* _data, const AttachmentVTable& _vtable) : Copyable({_data, &_vtable}) {}
 
     /// @name Methods
 
     /// @brief Set the data pointer for attachment
     /// @param _data value of ``void*`` type
-    /// @return Reference to the ``Attachment`` object
-    Attachment& set_data(const void* _data) {
+    /// @return Reference to the ``AttachmentView`` object
+    AttachmentView& set_data(const void* _data) {
         data = _data;
         return *this;
     }
 
     /// @brief Set the v-table for the attachment
     /// @param _vtable value of ``zenoh::AttachmentVTable`` type
-    /// @return Reference to the ``Attachment`` object
-    Attachment& set_vtable(const AttachmentVTable& _vtable) {
+    /// @return Reference to the ``AttachmentView`` object
+    AttachmentView& set_vtable(const AttachmentVTable& _vtable) {
         vtable = &_vtable;
         return *this;
     }
@@ -784,20 +784,22 @@ struct Attachment : public Copyable<::z_attachment_t> {
     /// @name Operators
 
     /// @brief Equality operator
-    /// @param v other ``Attachment`` object
+    /// @param v other ``AttachmentView`` object
     /// @return true if the attachment objects encodings are equal
-    bool operator==(const Attachment& v) const { return get_data() == v.get_data() && get_vtable() == v.get_vtable(); }
+    bool operator==(const AttachmentView& v) const {
+        return get_data() == v.get_data() && get_vtable() == v.get_vtable();
+    }
 
     /// @brief Inequality operator
-    /// @param v other ``Attachment`` object
+    /// @param v other ``AttachmentView`` object
     /// @return true if the attachment objects are not equal
-    bool operator!=(const Attachment& v) const { return !operator==(v); }
+    bool operator!=(const AttachmentView& v) const { return !operator==(v); }
 };
 
 /// Wraps the container which allows iterate by std::pair<std::string_view, std::string_view>
 // (e.g. std::map<std::string_view, std::string_view>) as an attachment.
 template <typename T>
-inline Attachment as_attachment(const T& pair_container) {
+inline AttachmentView as_attachment(const T& pair_container) {
     static AttachmentVTable vtable(
         [](const void* data, z_attachment_iter_body_t body, void* ctx) -> int8_t {
             const T* pair_container = static_cast<const T*>(data);
@@ -814,7 +816,7 @@ inline Attachment as_attachment(const T& pair_container) {
             return pair_container->size();
         });
 
-    return Attachment(static_cast<const void*>(&pair_container), vtable);
+    return AttachmentView(static_cast<const void*>(&pair_container), vtable);
 }
 
 /// Reference to data buffer in shared memory with reference counting. When all instances of ``Payload`` are destroyed,
@@ -958,8 +960,8 @@ struct Sample : public Copyable<::z_sample_t> {
     }
 
     /// @brief The attachment of this data sample
-    /// @return ``Attachment`` object
-    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
+    /// @return ``AttachmentView`` object
+    const z::AttachmentView& get_attachment() const { return static_cast<const z::AttachmentView&>(attachment); }
 #endif
 };
 
@@ -1201,13 +1203,13 @@ struct PutOptions : public Copyable<::z_put_options_t> {
 
 #ifdef __ZENOHCXX_ZENOHC
     /// @brief Get the attachment
-    /// @return ``zenoh::Attachment`` value
-    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
+    /// @return ``zenoh::AttachmentView`` value
+    const z::AttachmentView& get_attachment() const { return static_cast<const z::AttachmentView&>(attachment); }
 
     /// @brief Set the attachment
-    /// @param a the ``zenoh::Attachment`` value
+    /// @param a the ``zenoh::AttachmentView`` value
     /// @return reference to the structure itself
-    PutOptions& set_attachment(const z::Attachment& a) {
+    PutOptions& set_attachment(const z::AttachmentView& a) {
         attachment = a;
         return *this;
     };
@@ -1560,13 +1562,13 @@ struct PublisherPutOptions : public Copyable<::z_publisher_put_options_t> {
 
 #ifdef __ZENOHCXX_ZENOHC
     /// @brief Get the attachment
-    /// @return ``zenoh::Attachment`` value
-    const z::Attachment& get_attachment() const { return static_cast<const z::Attachment&>(attachment); }
+    /// @return ``zenoh::AttachmentView`` value
+    const z::AttachmentView& get_attachment() const { return static_cast<const z::AttachmentView&>(attachment); }
 
     /// @brief Set the attachment
-    /// @param a the ``zenoh::Attachment`` value
+    /// @param a the ``zenoh::AttachmentView`` value
     /// @return reference to the structure itself
-    PublisherPutOptions& set_attachment(const z::Attachment& a) {
+    PublisherPutOptions& set_attachment(const z::AttachmentView& a) {
         attachment = a;
         return *this;
     };
