@@ -7,9 +7,9 @@ endif()
 
 include(FetchContent)
 
-FetchContent_declare(c_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-c" GIT_TAG dev/1.0.0)
+FetchContent_declare(c_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-c" GIT_TAG a0557ba999ee43fb4d849040d31c087f59875ac2)
 FetchContent_MakeAvailable(c_backend)
-FetchContent_declare(cpp_wrapper GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-cpp" GIT_TAG dev/1.0.0)
+FetchContent_declare(cpp_wrapper GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-cpp" GIT_TAG b3228d8ed0002e96bbd7fcf08a146ad5431b4415)
 FetchContent_MakeAvailable(cpp_wrapper)
 
 add_executable(zc_simple zc_simple.cxx)

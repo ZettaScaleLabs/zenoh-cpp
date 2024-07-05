@@ -20,11 +20,11 @@ endif()
 #
 # 3. Use FetchContent:
 include(FetchContent)
-FetchContent_declare(zenohpico_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-pico" GIT_TAG dev/1.0.0)
-FetchContent_MakeAvailable(zenohpico_backend)
-FetchContent_declare(zenohc_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-c" GIT_TAG dev/1.0.0)
+# FetchContent_declare(zenohpico_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-pico" GIT_TAG dev/1.0.0)
+# FetchContent_MakeAvailable(zenohpico_backend)
+FetchContent_declare(zenohc_backend GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-c" GIT_TAG a0557ba999ee43fb4d849040d31c087f59875ac2)
 FetchContent_MakeAvailable(zenohc_backend)
-FetchContent_declare(cpp_wrapper GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-cpp" GIT_TAG dev/1.0.0)
+FetchContent_declare(cpp_wrapper GIT_REPOSITORY "https://github.com/eclipse-zenoh/zenoh-cpp" GIT_TAG b3228d8ed0002e96bbd7fcf08a146ad5431b4415)
 FetchContent_MakeAvailable(cpp_wrapper)
 
 #
@@ -34,10 +34,10 @@ FetchContent_MakeAvailable(cpp_wrapper)
 # the correct backend C library dependency (zenohpico or zenohc::lib or zenohc::static) 
 # are selected automatically by corresponding zenohcxx::* target
 #
-add_executable(zp_simple z_simple.cxx)
-target_link_libraries(zp_simple PRIVATE zenohcxx::zenohpico)
-set_property(TARGET zp_simple PROPERTY LANGUAGE CXX)
-set_property(TARGET zp_simple PROPERTY CXX_STANDARD 17)
+# add_executable(zp_simple z_simple.cxx)
+# target_link_libraries(zp_simple PRIVATE zenohcxx::zenohpico)
+# set_property(TARGET zp_simple PROPERTY LANGUAGE CXX)
+# set_property(TARGET zp_simple PROPERTY CXX_STANDARD 17)
 
 add_executable(zc_dynlib_simple z_simple.cxx)
 target_link_libraries(zc_dynlib_simple PRIVATE zenohcxx::zenohc::lib)

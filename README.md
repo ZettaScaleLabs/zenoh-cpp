@@ -153,7 +153,7 @@ Below are the steps to include [zenoh-cpp] into CMake project. See also [example
   find_package(zenohcxx)
   ```
   ```
-  FetchContent_Declare(zenohcxx GIT_REPOSITORY https://github.com/eclipse-zenoh/zenoh-cpp GIT_TAG main)
+  FetchContent_Declare(zenohcxx GIT_REPOSITORY https://github.com/eclipse-zenoh/zenoh-cpp GIT_TAG b3228d8ed0002e96bbd7fcf08a146ad5431b4415)
   FetchContent_MakeAvailable(zenohcxx)
   ```
 - add dependency on zenoh-cpp to your project in one of these ways:
