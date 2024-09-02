@@ -16,10 +16,17 @@ The Zenoh C++ API is installed as per the instructions in the [README](README.md
 
 It is expected that you have a QNX compatible version of zenoh-c installed.
 
-To build examples run:
+To build the examples for QNX x86_64 run:
 
 ```
 CC=qcc CXX=qcc CFLAGS=-Vgcc_ntox86_64_cxx AR=ntox86_64-ar cmake ..
+cmake --build . --target examples
+```
+
+To build the examples for QNX aarch64 run:
+
+```
+CC=qcc CXX=qcc CFLAGS=-Vgcc_ntoaarch64le_cxx AR=ntoaarch64-ar cmake ..
 cmake --build . --target examples
 ```
 
