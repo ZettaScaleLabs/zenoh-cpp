@@ -45,7 +45,7 @@ struct IClosure : public IDroppable {
 
 template <class D>
 class Droppable : public IDroppable {
-    typename std::conditional_t<std::is_lvalue_reference_v<D>, D, std::remove_reference_t<D>> _drop;
+    std::remove_reference_t<D> _drop;
 
    public:
     template <class DD>
@@ -62,8 +62,8 @@ class Droppable : public IDroppable {
 
 template <class C, class D, class R, class... Args>
 class Closure : public IClosure<R, Args...> {
-    typename std::conditional_t<std::is_lvalue_reference_v<C>, C, std::remove_reference_t<C>> _call;
-    typename std::conditional_t<std::is_lvalue_reference_v<D>, D, std::remove_reference_t<D>> _drop;
+    std::remove_reference_t<C> _call;
+    std::remove_reference_t<D> _drop;
 
    public:
     template <class CC, class DD>
