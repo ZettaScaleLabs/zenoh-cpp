@@ -49,7 +49,7 @@ class Droppable : public IDroppable {
 
    public:
     template <class DD>
-    Droppable(DD&& drop) : _drop(std::forward<DD>(drop)) {}
+    Droppable(DD&& drop) : _drop(std::move(drop)) {}
 
     virtual void drop() override { return _drop(); }
 
@@ -67,7 +67,7 @@ class Closure : public IClosure<R, Args...> {
 
    public:
     template <class CC, class DD>
-    Closure(CC&& call, DD&& drop) : _call(std::forward<CC>(call)), _drop(std::forward<DD>(drop)) {}
+    Closure(CC&& call, DD&& drop) : _call(std::move(call)), _drop(std::move(drop)) {}
 
     virtual R call(Args... args) override { return _call(std::forward<Args>(args)...); }
 
