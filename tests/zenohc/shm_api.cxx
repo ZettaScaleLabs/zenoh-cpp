@@ -386,10 +386,7 @@ int run_transport_provider() {
     auto shared_provider_state = session.obtain_shm_provider();
     ASSERT_TRUE(std::holds_alternative<ShmProviderNotReadyState>(shared_provider_state));
 
-    while (std::holds_alternative<ShmProviderNotReadyState>(shared_provider_state)) {
-        z_sleep_ms(100);
-        shared_provider_state = session.obtain_shm_provider();
-    }
+    shared_provider_state = session.obtain_shm_provider(true);
     ASSERT_TRUE(std::holds_alternative<SharedShmProvider>(shared_provider_state));
 
     auto shared_provider = std::get<SharedShmProvider>(std::move(shared_provider_state));

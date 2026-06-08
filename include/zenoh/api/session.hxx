@@ -213,11 +213,11 @@ class Session : public Owned<::z_owned_session_t> {
     ///
     /// @return SharedShmProvider if initialized from Session's provider if it exists and ShmProviderNotReadyState
     /// with provider state description otherwise.
-    std::variant<SharedShmProvider, ShmProviderNotReadyState> obtain_shm_provider() const {
+    std::variant<SharedShmProvider, ShmProviderNotReadyState> obtain_shm_provider(bool blocking = false) const {
         SharedShmProvider provider(zenoh::detail::null_object);
         ::z_shm_provider_state state;
 
-        ::z_obtain_shm_provider(interop::as_loaned_c_ptr(*this), &provider._0, &state);
+        ::z_obtain_shm_provider(interop::as_loaned_c_ptr(*this), blocking, &provider._0, &state);
         switch (state) {
             case Z_SHM_PROVIDER_STATE_DISABLED: {
                 return ShmProviderNotReadyState::SHM_PROVIDER_DISABLED;
